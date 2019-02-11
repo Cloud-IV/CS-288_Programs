@@ -87,31 +87,40 @@ void SET_remove(struct Set *set, int element)
 
 struct Set SET_union(struct Set s, struct Set t)
 {
+    struct Set uni = SET_new();
+    struct Set uni2 = SET_new();
     struct Node* node;
 
-    for (node = s.head; node != NULL; node = node -> next)
+    for (node = s.head; node != NULL; node = node -> next) SET_add(&uni, node -> element);
+    for (node = t.head; node != NULL; node = node -> next) SET_add(&uni2, node -> element);
+
+
+    for (node = uni.head; node != NULL; node = node -> next)
     {
-        if (SET_contains(&s, node -> element) == SET_contains(&t, node -> element)) SET_remove(&t, node -> element);
+        if (SET_contains(&uni, node -> element) == SET_contains(&uni2, node -> element)) SET_remove(&uni2, node -> element);
     }
 
-    struct Set uni = s;
     for (node = uni.head; node != NULL; node = node -> next)
     {
         if (node -> next == NULL)
         {
-            node -> next = t.head;
+            node -> next = uni2.head;
             break;
         }
     }
 
-    return s;
+    return uni;
 }
 
 struct Set SET_intersection(struct Set s, struct Set t)
 {
-    struct Set inter;
-    inter.head = NULL;
-    inter.tail = NULL;
+    struct Set inter = SET_new();
+    struct Node* node;
+
+    for (node = s.head; node != NULL; node = node -> next)
+    {
+        if (SET_contains(&s, node -> element) == SET_contains(&t, node -> element)) SET_add(&inter, node -> element);
+    }
 
     return inter;
 }
@@ -161,11 +170,17 @@ int main()
     struct Node* node;
     for (node = test.head; node != NULL; node = node -> next) printf("%d ", node -> element);
     printf("\n");
+
     struct Set test2 = SET_new();
     SET_add(&test2, 4);
     SET_add(&test2, 3);
-    SET_union(test, test2);
-    for (node = test.head; node != NULL; node = node -> next) printf("%d ", node -> element);
+
+    struct Set uni = SET_union(test, test2);
+    for (node = uni.head; node != NULL; node = node -> next) printf("%d ", node -> element);
+    printf("\n");
+
+    struct Set inter = SET_intersection(test, test2);
+    for (node = inter.head; node != NULL; node = node -> next) printf("%d ", node -> element);
     printf("\n");
 
     return 0;
