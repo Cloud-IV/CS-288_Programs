@@ -41,7 +41,7 @@ int SET_contains(struct Set *set, int element)
 
     for (n = set -> head; n != NULL; n = n -> next)
     {
-        if (n -> element == element) return element;
+        if (n -> element == element) return 1;
     }
     return 0;
 }
@@ -60,7 +60,7 @@ void SET_add(struct Set *set, int element)
 
 void SET_remove(struct Set *set, int element)
 {
-    if (SET_contains(set, element) == element)
+    if (SET_contains(set, element) == 1)
     {
         struct Node* node = set -> head;
         if (node -> element == element)
@@ -97,7 +97,7 @@ struct Set SET_union(struct Set s, struct Set t)
 
     for (node = uni.head; node != NULL; node = node -> next)
     {
-        if (SET_contains(&uni, node -> element) == SET_contains(&uni2, node -> element)) SET_remove(&uni2, node -> element);
+        if (SET_contains(&uni, node -> element) == 1 && SET_contains(&uni2, node -> element) == 1) SET_remove(&uni2, node -> element);
     }
 
     for (node = uni.head; node != NULL; node = node -> next)
@@ -119,7 +119,7 @@ struct Set SET_intersection(struct Set s, struct Set t)
 
     for (node = s.head; node != NULL; node = node -> next)
     {
-        if (SET_contains(&s, node -> element) == SET_contains(&t, node -> element)) SET_add(&inter, node -> element);
+        if (SET_contains(&s, node -> element) == 1 && SET_contains(&t, node -> element) == 1) SET_add(&inter, node -> element);
     }
 
     return inter;
@@ -127,8 +127,15 @@ struct Set SET_intersection(struct Set s, struct Set t)
 
 struct Set SET_difference(struct Set s, struct Set t)
 {
-    /* return s - t */
-    return s;
+    struct Set diff = SET_new();
+    struct Node* node;
+
+    for (node = s.head; node != NULL; node = node -> next)
+    {
+        if (SET_contains(&s, node -> element) != SET_contains(&t, node -> element)) SET_add(&diff, node -> element);
+    }
+
+    return diff;
 }
 
 int SET_min(struct Set *set)
@@ -158,29 +165,48 @@ int SET_max(struct Set *set)
 int main()
 {
     struct Set test = SET_new();
+    struct Node* node;
+
+    SET_add(&test, 0);
     SET_add(&test, 1);
     SET_add(&test, 2);
     SET_add(&test, 3);
-    printf("%d\n", SET_contains(&test, 2));
+    SET_add(&test, -2);
+    printf("Elements in set 1: \n");
+    for (node = test.head; node != NULL; node = node -> next) printf("%d ", node -> element);
+    printf("\n");
+
+    printf("Contains 2 test: %d\n", SET_contains(&test, 2));
     SET_remove(&test, 2);
-    printf("%d\n", SET_contains(&test, 2));
+    printf("Contains 2 test: %d\n", SET_contains(&test, 2));
 
     printf("min: %d, max: %d\n", SET_min(&test), SET_max(&test));
 
-    struct Node* node;
+    printf("Elements in set 1: \n");
     for (node = test.head; node != NULL; node = node -> next) printf("%d ", node -> element);
     printf("\n");
 
     struct Set test2 = SET_new();
     SET_add(&test2, 4);
     SET_add(&test2, 3);
+    SET_add(&test2, 0);
+    printf("Elements in set 2: \n");
+    for (node = test2.head; node != NULL; node = node -> next) printf("%d ", node -> element);
+    printf("\n");
 
     struct Set uni = SET_union(test, test2);
+    printf("Elements in union of set 1 & set 2: \n");
     for (node = uni.head; node != NULL; node = node -> next) printf("%d ", node -> element);
     printf("\n");
 
     struct Set inter = SET_intersection(test, test2);
+    printf("Elements in intersection of set 1 and set 2: \n");
     for (node = inter.head; node != NULL; node = node -> next) printf("%d ", node -> element);
+    printf("\n");
+
+    struct Set diff = SET_difference(test, test2);
+    printf("Set difference of set 1 & set 2: \n");
+    for (node = diff.head; node != NULL; node = node -> next) printf("%d ", node -> element);
     printf("\n");
 
     return 0;
